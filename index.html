@@ -119,13 +119,15 @@ header::after {
 main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px;gap:14px;position:relative;z-index:1;}
 
 /* ═══ GRID ════════════════════════════════════ */
-#grid{display:flex;flex-direction:column;gap:7px;}
-.grid-row{display:flex;gap:7px;}
+#grid{display:flex;flex-direction:row;gap:10px;align-items:flex-start;justify-content:center;}
+.grid-half{display:flex;flex-direction:column;gap:6px;}
+.grid-divider{width:1px;background:linear-gradient(180deg,transparent,var(--border),transparent);align-self:stretch;margin:0 2px;}
+.grid-row{display:flex;gap:5px;}
 .cell{
-  width:84px;height:84px;
+  width:60px;height:60px;
   border:2px solid var(--border2);border-radius:14px;
   display:flex;align-items:center;justify-content:center;
-  font-size:1.65rem;font-weight:800;
+  font-size:1.2rem;font-weight:800;
   background:linear-gradient(145deg,var(--surface2),var(--surface));
   box-shadow:inset 0 2px 4px rgba(0,0,0,.4), 0 1px 0 rgba(255,180,60,.06);
   transition:border-color .15s,transform .1s;
@@ -134,7 +136,7 @@ main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px
 /* earthen pot rim effect */
 .cell::after{content:'';position:absolute;inset:2px;border-radius:11px;border:1px solid rgba(255,180,60,.06);pointer-events:none;}
 .cell.active-row{border-color:var(--dal);}
-.cell.active-row.has-letter{border-color:var(--tadka);transform:scale(1.04);box-shadow:0 0 12px rgba(245,158,11,.3);}
+.cell.active-row.has-letter{border-color:var(--tadka);transform:scale(1.03);box-shadow:0 0 12px rgba(245,158,11,.3);}
 @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.13)}100%{transform:scale(1)}}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
 @keyframes flipIn{0%{transform:rotateX(0)}100%{transform:rotateX(-90deg)}}
@@ -342,7 +344,15 @@ main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px
 .uid-box{background:rgba(0,0,0,.4);border-radius:8px;padding:7px 10px;font-size:.67rem;color:var(--subtext);word-break:break-all;margin-bottom:12px;border:1px solid var(--border);}
 .uid-box b{color:var(--tadka);display:block;margin-bottom:3px;}
 
-@media(max-width:380px){.cell{width:74px;height:74px;font-size:1.45rem;}.key{min-width:26px;height:37px;font-size:.86rem;}}
+
+#timer-bar{
+  text-align:center;padding:4px 16px;
+  font-size:.7rem;color:var(--subtext);
+  background:rgba(0,0,0,.3);border-bottom:1px solid var(--border);
+  letter-spacing:.04em;
+}
+#timer-bar span{color:var(--tadka);font-weight:700;font-variant-numeric:tabular-nums;}
+@media(max-width:420px){.cell{width:52px;height:52px;font-size:1rem;}.key{min-width:26px;height:37px;font-size:.86rem;}}
 </style>
 </head>
 <body>
@@ -367,6 +377,7 @@ main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px
   </div>
 </header>
 
+<div id="timer-bar">⏰ अगला शब्द: <span id="countdown">--:--:--</span></div>
 <div id="status-bar">आज का 3-खण्ड शब्द खोजें — <b id="tries-left">10 मौके</b></div>
 <div id="toast"></div>
 
@@ -415,18 +426,18 @@ main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px
   <p style="font-size:.75rem;color:var(--subtext);margin-bottom:8px;font-weight:600;">🏅 Points System:</p>
   <div style="display:flex;gap:8px;">
     <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
-      <div class="pts-item"><div class="pts-val">95</div><div class="pts-lbl">1st try 🏆</div></div>
-      <div class="pts-item"><div class="pts-val">90</div><div class="pts-lbl">2nd try</div></div>
-      <div class="pts-item"><div class="pts-val">85</div><div class="pts-lbl">3rd try</div></div>
-      <div class="pts-item"><div class="pts-val">80</div><div class="pts-lbl">4th try</div></div>
-      <div class="pts-item"><div class="pts-val">75</div><div class="pts-lbl">5th try</div></div>
+      <div class="pts-item"><div class="pts-val">100</div><div class="pts-lbl">1st try 🏆</div></div>
+      <div class="pts-item"><div class="pts-val">95</div><div class="pts-lbl">2nd try</div></div>
+      <div class="pts-item"><div class="pts-val">90</div><div class="pts-lbl">3rd try</div></div>
+      <div class="pts-item"><div class="pts-val">85</div><div class="pts-lbl">4th try</div></div>
+      <div class="pts-item"><div class="pts-val">80</div><div class="pts-lbl">5th try</div></div>
     </div>
     <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
-      <div class="pts-item"><div class="pts-val">70</div><div class="pts-lbl">6th try</div></div>
-      <div class="pts-item"><div class="pts-val">65</div><div class="pts-lbl">7th try</div></div>
-      <div class="pts-item"><div class="pts-val">60</div><div class="pts-lbl">8th try</div></div>
-      <div class="pts-item"><div class="pts-val">55</div><div class="pts-lbl">9th try</div></div>
-      <div class="pts-item"><div class="pts-val">50</div><div class="pts-lbl">10th try</div></div>
+      <div class="pts-item"><div class="pts-val">75</div><div class="pts-lbl">6th try</div></div>
+      <div class="pts-item"><div class="pts-val">70</div><div class="pts-lbl">7th try</div></div>
+      <div class="pts-item"><div class="pts-val">65</div><div class="pts-lbl">8th try</div></div>
+      <div class="pts-item"><div class="pts-val">60</div><div class="pts-lbl">9th try</div></div>
+      <div class="pts-item"><div class="pts-val">55</div><div class="pts-lbl">10th try</div></div>
     </div>
   </div>
   <p style="font-size:.7rem;color:var(--subtext);margin-top:8px;">Same score? जिसने <b style="color:var(--ghee)">पहले</b> solve किया वो leaderboard पर ऊपर।</p>
@@ -574,7 +585,8 @@ function getIST(){const n=new Date();return new Date(n.getTime()+(330+n.getTimez
 function todayStr(){return getIST().toISOString().slice(0,10);}
 function weekKey(){const d=new Date(todayStr());const dy=d.getDay();d.setDate(d.getDate()-(dy===0?6:dy-1));return d.toISOString().slice(0,10);}
 function wordIndex(){const d0=new Date(START_DATE),d1=new Date(todayStr());return Math.floor((d1-d0)/86400000)%FALLBACK_WORDS.length;}
-function calcPoints(tryNum){ return tryNum>=1&&tryNum<=MAX_TRIES ? 50+5*(MAX_TRIES-tryNum) : 0; }
+function calcPoints(tryNum){ return tryNum>=1&&tryNum<=MAX_TRIES ? 100-5*(tryNum-1) : 0; }
+// 1→100, 2→95, 3→90, 4→85, 5→80, 6→75, 7→70, 8→65, 9→60, 10→55
 // 1→75, 2→70, 3→65, 4→60, 5→55, 6→50
 function sessionKey(){return 'wt3_'+todayStr();}
 function getSessionData(){try{return JSON.parse(localStorage.getItem(sessionKey()))||{};}catch(e){return{};}}
@@ -619,8 +631,17 @@ function checkGuess(guess,answer){
 /* ══ GRID ═══════════════════════════════════ */
 function buildGrid(){
   const g=document.getElementById('grid');g.innerHTML='';
-  for(let r=0;r<MAX_TRIES;r++){const row=document.createElement('div');row.className='grid-row';row.id=`row-${r}`;
-    for(let c=0;c<TARGET_SYLS;c++){const cell=document.createElement('div');cell.className='cell';cell.id=`cell-${r}-${c}`;row.appendChild(cell);}g.appendChild(row);}
+  // Left half: rows 0-4
+  const left=document.createElement('div');left.className='grid-half';
+  for(let r=0;r<5;r++){const row=document.createElement('div');row.className='grid-row';row.id=`row-${r}`;
+    for(let c=0;c<TARGET_SYLS;c++){const cell=document.createElement('div');cell.className='cell';cell.id=`cell-${r}-${c}`;row.appendChild(cell);}left.appendChild(row);}
+  // Divider
+  const div=document.createElement('div');div.className='grid-divider';
+  // Right half: rows 5-9
+  const right=document.createElement('div');right.className='grid-half';
+  for(let r=5;r<MAX_TRIES;r++){const row=document.createElement('div');row.className='grid-row';row.id=`row-${r}`;
+    for(let c=0;c<TARGET_SYLS;c++){const cell=document.createElement('div');cell.className='cell';cell.id=`cell-${r}-${c}`;row.appendChild(cell);}right.appendChild(row);}
+  g.appendChild(left);g.appendChild(div);g.appendChild(right);
 }
 function renderGrid(){
   for(let r=0;r<MAX_TRIES;r++) for(let c=0;c<TARGET_SYLS;c++){const el=document.getElementById(`cell-${r}-${c}`);el.className='cell';el.textContent='';}
@@ -640,8 +661,9 @@ async function revealRow(ri,syls,cols){
 
 /* ══ KEYBOARD ═══════════════════════════════ */
 const KB_ROWS=[['क','ख','ग','घ','ङ','च','छ','ज','झ','ञ'],['ट','ठ','ड','ढ','ण','त','थ','द','ध','न'],['प','फ','ब','भ','म','य','र','ल','व','श'],['ष','स','ह','ड़','ढ़','ज़','फ़']];
-const VOWELS=['अ','आ','इ','ई','उ','ऊ','ए','ऐ','ओ','औ'];
-const MATRAS=[{d:'ा',v:'ा'},{d:'ि',v:'ि'},{d:'ी',v:'ी'},{d:'ु',v:'ु'},{d:'ू',v:'ू'},{d:'े',v:'े'},{d:'ै',v:'ै'},{d:'ो',v:'ो'},{d:'ौ',v:'ौ'},{d:'ं',v:'ं'},{d:'ः',v:'ः'}];
+const VOWELS=['अ','आ','इ','ई','उ','ऊ','ए','ऐ','ओ','औ','ं','ः'];
+const VOWEL_TO_MATRA={'आ':'ा','इ':'ि','ई':'ी','उ':'ु','ऊ':'ू','ए':'े','ऐ':'ै','ओ':'ो','औ':'ौ'};
+const INDEPENDENT_VOWELS=new Set(['अ','आ','इ','ई','उ','ऊ','ए','ऐ','ओ','औ']);
 
 function buildKeyboard(){
   const kbd=document.getElementById('keyboard');kbd.innerHTML='';
@@ -649,11 +671,8 @@ function buildKeyboard(){
   const addRow=chars=>{const row=document.createElement('div');row.className='kb-row';chars.forEach(ch=>{const k=document.createElement('div');k.className='key';k.textContent=ch;k.id=`key_${encodeURIComponent(ch)}`;k.addEventListener('click',()=>onKey(ch));row.appendChild(k);});kbd.appendChild(row);};
   addLabel('व्यंजन');
   KB_ROWS.forEach(r=>addRow(r));
-  addLabel('स्वर');
+  addLabel('स्वर — व्यंजन के बाद = मात्रा');
   addRow(VOWELS);
-  addLabel('मात्राएँ');
-  const mr=document.createElement('div');mr.className='kb-row';
-  MATRAS.forEach(m=>{const k=document.createElement('div');k.className='key';k.textContent=m.d;k.addEventListener('click',()=>onKey(m.v));mr.appendChild(k);});kbd.appendChild(mr);
   const ctrl=document.createElement('div');ctrl.className='kb-row';ctrl.style.marginTop='4px';
   const enter=document.createElement('div');enter.className='key enter';enter.textContent='Enter ↵';enter.addEventListener('click',submitGuess);ctrl.appendChild(enter);
   const back=document.createElement('div');back.className='key ctrl';back.textContent='⌫';back.addEventListener('click',doBackspace);ctrl.appendChild(back);
@@ -665,9 +684,36 @@ function updateKeyColors(guess,cols){const pri={green:4,blue:3,yellow:2,grey:1};
 /* ══ INPUT ══════════════════════════════════ */
 const MR=v=>{const c=v.codePointAt(0);return(c>=0x093C&&c<=0x094D)||c===0x0902||c===0x0903;};
 function onKey(ch){
-  if(GS.done)return;ch=N(ch);const isMatra=MR(ch);
-  if(isMatra){if(!GS.input)return;const last=[...GS.input].at(-1);if(last&&MR(last))return;GS.input+=ch;}
-  else{if(syllables(GS.input).length>=TARGET_SYLS)return;GS.input+=ch;}
+  if(GS.done)return; ch=N(ch);
+  const isVowelKey = INDEPENDENT_VOWELS.has(ch) || ch==='ं' || ch==='ः';
+  if(isVowelKey){
+    const matra = VOWEL_TO_MATRA[ch]; // undefined for अ, ं, ः
+    const lastChar = GS.input ? [...GS.input].at(-1) : null;
+    // lastChar is bare consonant if it's not a matra and not an independent vowel
+    const isBareConsonant = lastChar && !MR(lastChar) && !INDEPENDENT_VOWELS.has(lastChar);
+    if(isBareConsonant && matra){
+      // Smart: add matra to previous consonant
+      GS.input += matra;
+    } else if(ch==='ं'||ch==='ः'){
+      // anusvara / visarga — only after something
+      if(!GS.input)return;
+      if(MR([...GS.input].at(-1)))return; // already has matra
+      GS.input += ch;
+    } else {
+      // Add as independent vowel
+      if(syllables(GS.input).length>=TARGET_SYLS)return;
+      GS.input += ch;
+    }
+  } else if(MR(ch)){
+    // Direct matra press (physical keyboard etc)
+    if(!GS.input)return;
+    const last=[...GS.input].at(-1);if(last&&MR(last))return;
+    GS.input+=ch;
+  } else {
+    // Consonant
+    if(syllables(GS.input).length>=TARGET_SYLS)return;
+    GS.input+=ch;
+  }
   const ar=GS.guesses.length;if(ar<MAX_TRIES){const syls=syllables(GS.input),li=syls.length-1;if(li>=0){const el=document.getElementById(`cell-${ar}-${li}`);if(el){el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),120);}}}
   renderGrid();
 }
@@ -864,10 +910,28 @@ function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('hidden');}));
 document.addEventListener('keydown',e=>{if(e.key==='Enter')submitGuess();else if(e.key==='Backspace')doBackspace();});
 
+
+/* ══ COUNTDOWN TIMER ════════════════════════ */
+function startTimer(){
+  function update(){
+    const ist=getIST();
+    const midnight=new Date(ist);
+    midnight.setHours(24,0,0,0);
+    const diff=midnight-ist;
+    const h=Math.floor(diff/3600000);
+    const m=Math.floor((diff%3600000)/60000);
+    const s=Math.floor((diff%60000)/1000);
+    const el=document.getElementById('countdown');
+    if(el) el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  update(); setInterval(update,1000);
+}
+
 /* ══ INIT ════════════════════════════════════ */
 function init(){
   document.getElementById('word-num').textContent='#'+(wordIndex()+1);
   buildGrid();buildKeyboard();renderGrid();renderKeyboard();
+  startTimer();
   if(GS.done)setTimeout(showResult,300);
   initFirebase();
 }
