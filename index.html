@@ -324,7 +324,7 @@ main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px
 }
 
 /* LOGIN */
-.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1F2937;border:none;border-radius:12px;padding:12px 20px;font-size:.9rem;font-weight:600;cursor:pointer;width:100%;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
 
 /* ADMIN */
 .admin-section{margin-bottom:18px;}
@@ -373,7 +373,7 @@ main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px
     <button class="hdr-btn" onclick="openModal('help-modal')">?</button>
     <button class="hdr-btn" onclick="openModal('lb-modal')">🏆</button>
     <button class="hdr-btn" id="admin-btn" style="display:none" onclick="openModal('admin-modal')">🔧</button>
-    <div id="auth-widget"><button class="hdr-btn" onclick="googleLogin()">👤</button></div>
+    <div id="auth-widget"><button class="hdr-btn" onclick="openModal('name-modal')" id="name-btn" title="नाम बदलें">👤</button></div>
   </div>
 </header>
 
@@ -443,15 +443,18 @@ main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px
   <p style="font-size:.7rem;color:var(--subtext);margin-top:8px;">Same score? जिसने <b style="color:var(--ghee)">पहले</b> solve किया वो leaderboard पर ऊपर।</p>
 </div></div>
 
-<!-- LOGIN -->
-<div class="overlay hidden" id="login-modal"><div class="modal">
-  <h2>🔑 Login करें</h2>
-  <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
-  <p style="font-size:.8rem;color:var(--subtext);margin-bottom:16px;">Score save करने और leaderboard में दिखने के लिए Google से login करें।</p>
-  <button class="google-btn" onclick="googleLogin()">
-    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.74 12.27c0-.79-.07-1.54-.19-2.27H12v4.3h6.58a5.62 5.62 0 01-2.44 3.69v3.07h3.95c2.31-2.13 3.65-5.27 3.65-8.79z"/><path fill="#34A853" d="M12 24c3.3 0 6.07-1.09 8.09-2.95l-3.95-3.07c-1.09.73-2.49 1.16-4.14 1.16-3.18 0-5.88-2.15-6.84-5.03H1.1v3.17A12 12 0 0012 24z"/><path fill="#FBBC05" d="M5.16 14.11A7.22 7.22 0 014.78 12c0-.73.13-1.44.38-2.11V6.72H1.1A12 12 0 000 12c0 1.94.46 3.77 1.1 5.28l4.06-3.17z"/><path fill="#EA4335" d="M12 4.75c1.79 0 3.4.62 4.67 1.82l3.5-3.5C18.07 1.19 15.3 0 12 0A12 12 0 001.1 6.72l4.06 3.17C6.12 6.9 8.82 4.75 12 4.75z"/></svg>
-    Google से Login करें
+<!-- NAME PROMPT -->
+<div class="overlay hidden" id="name-modal"><div class="modal" style="border-top-color:var(--chili)">
+  <h2>🌶️ वर्डल तड़का में स्वागत!</h2>
+  <p style="font-size:.82rem;color:var(--subtext);margin-bottom:18px;line-height:1.6;">Leaderboard पर दिखने के लिए अपना नाम बताओ। यह इस device पर save हो जाएगा।</p>
+  <input type="text" id="player-name-input" class="admin-input"
+    placeholder="अपना नाम लिखो…" maxlength="24"
+    onkeydown="if(event.key==='Enter')saveName()"
+    style="font-size:1.1rem;padding:12px;margin-bottom:12px;text-align:center">
+  <button onclick="saveName()" style="width:100%;background:linear-gradient(135deg,var(--chili),#991B1B);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:700;padding:12px;cursor:pointer;">
+    🌶️ खेलना शुरू करो!
   </button>
+  <p style="font-size:.68rem;color:var(--subtext);margin-top:10px;text-align:center;">नाम बाद में 👤 button से बदल सकते हो</p>
 </div></div>
 
 <!-- LEADERBOARD -->
@@ -491,23 +494,97 @@ main{display:flex;flex-direction:column;align-items:center;padding:14px 10px 8px
 /* ══ CONFIG ═════════════════════════════════ */
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyBQ8zCnCVc9Hjtbl0GWLYjPfSKzaw_ygKA",
-  authDomain:        "shabd-baazi.firebaseapp.com",
   projectId:         "shabd-baazi",
   storageBucket:     "shabd-baazi.firebasestorage.app",
   messagingSenderId: "64573186332",
   appId:             "1:64573186332:web:f3a089a43541cf61919ad9"
 };
-const ADMIN_UID   = "XyvhXCKbOnW0oPlgoKRjQLWxxDw1";
+/* Admin device ID — set this after first launch */
+const ADMIN_DEVICE_ID = "XyvhXCKbOnW0oPlgoKRjQLWxxDw1";
 const MAX_TRIES   = 10;
 const TARGET_SYLS = 3;
 const START_DATE  = '2024-01-01';
 
-const FALLBACK_WORDS = [
-  'किताब','बादल','जंगल','सड़क','मकान','कहानी','आकाश','भारत','सुबह','कागज',
-  'नमक','जवाब','सवाल','दिमाग','किसान','पहाड़','दरिया','तितली','कपड़ा','दवाई',
-  'मिठाई','शहर','जलेबी','पतंग','गरीब','जहाज','महल','बगीचा','लहर','रुपया',
-  'हवाई','नरम','वतन','बहन','कमल','समय','तरुण','चिड़िया','लड़की','मुंबई',
+const WORD_DICT = [
+  'जलेबी','पुलाव','समोसा','परांठा','खिचड़ी','पकौड़ा','मसाला','राजमा','तड़का','धनिया',
+  'गाजर','मटर','अचार','चटनी','पापड़','खजूर','पपीता','अनार','जामुन','मिठाई',
+  'हलवा','खटाई','तोरई','करेला','बैंगन','पालक','पनीर','चावल','संतरा','सरसों',
+  'केसर','कढ़ाई','कड़ाही','चूरमा','गुझिया','रबड़ी','कुल्फी','फालूदा','कोरमा','कलेजी',
+  'सेवई','चिवड़ा','भुजिया','मठरी','गजक','रेवड़ी','ठेकुआ','निहारी','हलीम','बादल',
+  'जंगल','पहाड़','दरिया','तालाब','झरना','सागर','धरती','आकाश','बिजली','मौसम',
+  'नहर','बगीचा','तितली','चिड़िया','देहात','पूरब','बरखा','कुहरा','भूकंप','कंदरा',
+  'मिट्टी','फसल','बागान','कुआँ','बावड़ी','तलाई','नदिया','बंदर','लोमड़ी','भेड़िया',
+  'मकड़ी','कछुआ','मेंढक','बगुला','नेवला','सांभर','तेंदुआ','हिरन','कोयल','पपीहा',
+  'चकोर','सारस','बगला','सूअर','बाघिन','मोरनी','मछली','बकरी','लंगूर','गीदड़',
+  'सियार','केंकड़ा','बिच्छू','भंवरा','टिड्डा','झींगुर','जुगनू','कोहनी','हथेली','नाखून',
+  'घुटना','टखना','पसली','नथुना','कलाई','कमर','किताब','कागज','कमरा','कंबल',
+  'चादर','तकिया','रजाई','तौलिया','खिड़की','कमीज','बटन','लकड़ी','मटकी','कपड़ा',
+  'दवाई','रुपया','चमड़ा','बटुआ','मंदिर','गिरजा','चौपाल','मैदान','चूल्हा','चौखट',
+  'चौबारा','दालान','ओसारा','अटारी','पलंग','खटोला','कुर्सी','लहंगा','चुनरी','ओढ़नी',
+  'कुरता','पगड़ी','पायल','बिंदिया','कंगन','अंगूठी','किसान','लड़की','तरुण','सहेली',
+  'गरीब','गुरुजी','पंडित','मौलवी','पुजारी','बढ़ई','लुहार','दर्जी','सुनार','भिखारी',
+  'सिपाही','लेखक','बालक','बालिका','किशोर','किशोरी','निराशा','उदासी','राहत','जुदाई',
+  'मिलाप','मुराद','मस्ती','उमंग','जुनून','सुकून','हैरत','करना','कहना','चलना',
+  'बोलना','सुनना','देखना','लिखना','पढ़ना','जागना','हंसना','नाचना','बजाना','सीखना',
+  'मिलना','लड़ना','उड़ना','तैरना','दौड़ना','उठाना','बैठना','सजाना','बनाना','मिलाना',
+  'रखना','नहाना','बताना','दिखाना','सिखाना','बुलाना','खिलाना','पिलाना','हिलाना','घुमाना',
+  'बचाना','जगाना','रुलाना','डराना','थकाना','बहाना','सुनाना','दिलाना','चढ़ाना','गिराना',
+  'चुराना','पकाना','लगाना','मनाना','बुझाना','जलाना','भगाना','भिगोना','मचाना','उड़ाना',
+  'निभाना','सुंदर','महान','पतला','गुलाबी','नारंगी','जामुनी','बैंगनी','कठिन','चिकना',
+  'नरम','गहरा','उथला','संकरा','कठोर','कोमल','कड़वा','दिलेर','हठीला','जिद्दी',
+  'रंगीला','शरीफ','बाजार','समाज','रेलवे','मुंबई','दिल्ली','पटना','भोपाल','मथुरा',
+  'मसूरी','शिमला','शिलांग','इंफाल','जुलाई','सवेरा','तुलसी','पीपल','कदम','पलाश',
+  'चंदन','महुआ','सागौन','ककड़ी','फालसा','केतकी','सेमल','गिल्ली','पतंग','तमाशा',
+  'दंगल','तबला','सितार','ढोलक','मृदंग','नगाड़ा','खंजरी','डफली','मंजीरा','कुदाल',
+  'खुरपी','दरांती','फावड़ा','बेलचा','हथौड़ा','करघा','तकला','आरती','भजन','नमाज',
+  'व्रत','पर्व','ताप्ती','कावेरी','यमुना','रिक्शा','मुकाम','पहेली','अलाव','लपट',
+  'कंकड़','रिश्ता','सफर','मंजिल','पनाह','ठिकाना','बसेरा','चुनाव','इंसाफ','बयान',
+  'खतरा','दावत','किराया','मालिक','नौकर','दुकान','कमाई','खर्चा','उधार','संदेश',
+  'चिट्ठी','महल','मीनार','कानून','सहारा','मदद','विकास','नौकरी','शिक्षा','लिखाई',
+  'सिलाई','बुनाई','रंगाई','धुलाई','सफाई','मिसाल','नमूना','नकल','गवाह','गवाही',
+  'जलसा','जवाब','सवाल','दिमाग','खबर','गुलाब','चमेली','तलाश','जमीन','रसोई',
+  'उपाय','झोपड़ी','चाहत','दोस्ती','मिलन','विदाई','भाग्य','नसीब','जीवन','जवानी',
+  'बुढ़ापा','मित्र','ईमान','रूमाल','परदा','पुतला','धमाका','इशारा','निशान','किरण',
+  'रोशनी','चमक','लिफाफा','बर्मा','लबादा','बनिया','बंजारा','ज़िंदगी','बातूनी','फिदाई',
+  'मुल्क','वतन','विदेश','कायर','कंजूस','चालाक','दोतारा','सपेरा','कस्बा','दरोगा',
+  'हकीम','वैद्य','डाकिया','तारीख','दिनांक','कमाल','खिलाड़ी','भूगोल','पुकार','कोशिश',
+  'मरण','दोस्त','गाँव','मुनाफा','जिम्मा','छाँव','पटोला','नाटक','कुश्ती','बज़्म',
+  'कसैला','बेसुरा','कविता','कहानी','भूमिका','आबाद','शाबाश','बेकाबू','निगाह','सुबह',
+  'आँखें','मूँछें','बेचैनी','तड़प','विरह','भरोसा','यकीन','संदेह','पूछना','जानना',
+  'लौटना','रुकना','सोचना','मानना','दिखना','कमाना','खलल','दखल','मशक','लगान',
+  'करज','गिरवी','रहन','बंधक','तबाही','तहस','हालत','स्थिति','जतन','उजाला',
+  'गर्मी','सर्दी','तूफान','आँधी','पत्ती','दलिया','बाजरा','ज्वार','अरबी','कुंदरू',
+  'तेलिया','कद्दू','इमली','कोकम','कहार','चमार','भँगी','रावत','घूमना','डोलना',
+  'खेलना','कूदना','सत्य','न्याय','धर्म','भक्ति','साधना','ध्यान','सतना','दतिया',
+  'मुरैना','महोबा','अमेठी','तुरंत','फौरन','दादाजी','नानाजी','मामाजी','चाचाजी','ससुर',
+  'देवर','ननद','मजार','समाधि','अज़ान','नमाज़','सलात','मोटर','ट्रेन','हवाई',
+  'जमीनी','दफन','इरादा','आरजू','ललक','कजली','कजरी','सोहर','विरहा','बिरहा',
+  'आल्हा','भैरवी','जोगिया','भोपाली','यमनी','मकोय','सनई','चिरौंजी','कलौंजी','हरड़',
+  'बहेड़ा','आमला','तगर','गिट्टी','पोषम','खिलौना','गुल्ली','नीलाभ','मैरून','हल्का',
+  'पगली','बावली','सयानी','उलटा','तिरछा','चौकोर','तिकोना','नुकीला','भोंथरा','चाहना',
+  'निकला','उठना','सड़क','मकान','भारत','बहन','कमल','समय','लहर','अकड़',
+  'अकाल','अकेला','अखाड़ा','अगला','अगवा','अजब','अटल','अदना','अफरा','अमल',
+  'अमन','अमर','अमला','अमली','अरुण','अलग','असर','असल','असली','आदत',
+  'आदमी','आरोप','आरोही','इनाम','उजाड़','एकता','कदर','कफन','करुण','कबूल',
+  'कबीर','कपटी','कागजी','कारण','कालिमा','किवाड़','कुनबा','खामोश','खमीर','खयाल',
+  'खुलासा','खुमार','खुराक','गबन','गरज','गुजारा','गुमान','गुलाम','घमंड','घटना',
+  'चंचल','चाकरी','चिंतन','जमाना','जिगरी','जुगाड़','झमेला','झलक','झरोखा','टलना',
+  'ठगना','ठोकर','डायरी','तरीका','तलाशी','थकान','थपेड़ा','दलाल','दिलासा','दुलार',
+  'दुहाई','दोबारा','धमकी','नकारा','नवाब','नादान','नादानी','निराला','निशाना','नीयत',
+  'पराया','फकीर','फरेब','फसाना','बखान','बीमारी','बेनाम','मिजाज','मुआफ','मुखिया',
+  'यातना','रिवाज','लहजा','लगाव','लगन','लड़ाकू','वाकया','वाकिफ','विरोध','शामिल',
+  'शिकवा','शिकार','साहसी','सादगी','सुधार','सुहाना','हमला','हमेशा','हवाला','हासिल',
+  'आबादी','आजादी','आसरा','आसान','आहट','आराम','इलाज','उदार','उदास','उसूल',
+  'एकांत','ओझल','करार','कसूर','कायदा','खनक','गलत','जनाब','जरूर','जुर्म',
+  'तमाम','तराना','पैगाम','बेगाना','बेवफा','मलाल','लानत','लाचार','सताना','हिसाब',
+  'हैवान','अनुज','अनिल','अनिता','अशोक','उमेश','कमला','करुणा','कैलाश','गणेश',
+  'गिरीश','गोपाल','जगत','जनक','जलज','ज्योति','देवकी','देवता','नमन','नयन',
+  'नलिन','नवीन','निखिल','नीरज','पवन','प्रभु','मनोज','महेश','मुकेश','मोहन',
+  'रमेश','राजेश','राकेश','रावण','रोहन','वसुधा','विमल','विवेक','विशाल','शकुन',
+  'शरद','शिवम','संजय','सतीश','सुधीर','सुनील','सुभाष','सुरेश','सुशील','हरीश',
+  'हेमंत',
 ];
+const FALLBACK_WORDS = WORD_DICT;
 
 /* ══ ANIMATED BG ════════════════════════════ */
 (function spawnBg(){
@@ -548,29 +625,17 @@ const FALLBACK_WORDS = [
 })();
 
 /* ══ FIREBASE ═══════════════════════════════ */
-let auth=null,db=null,firebaseReady=false;
+let db=null,firebaseReady=false;
 function loadScript(src){return new Promise((r,j)=>{const s=document.createElement('script');s.src=src;s.onload=r;s.onerror=j;document.head.appendChild(s);});}
 
 async function initFirebase(){
   try{
     await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-    await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js');
     await loadScript('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js');
     firebase.initializeApp(FIREBASE_CONFIG);
-    auth=firebase.auth(); db=firebase.firestore(); firebaseReady=true;
-    // Handle mobile redirect result
-    try{
-      const r=await auth.getRedirectResult();
-      if(r&&r.user){
-        GS.user=r.user; renderAuthWidget(); showAdminBtn(); loadTodayScore();
-        toast('Welcome, '+r.user.displayName.split(' ')[0]+'! 🌶️');
-      }
-    }catch(e){ console.warn('Redirect result:',e.message); }
-    auth.onAuthStateChanged(user=>{
-      GS.user=user; renderAuthWidget(); showAdminBtn();
-      if(user) loadTodayScore();
-    });
+    db=firebase.firestore(); firebaseReady=true;
     fetchTodayWordPool();
+    loadTodayScore();
   }catch(e){console.warn('Firebase:',e.message);}
 }
 
@@ -591,6 +656,52 @@ function calcPoints(tryNum){ return tryNum>=1&&tryNum<=MAX_TRIES ? 100-5*(tryNum
 function sessionKey(){return 'wt3_'+todayStr();}
 function getSessionData(){try{return JSON.parse(localStorage.getItem(sessionKey()))||{};}catch(e){return{};}}
 function saveSession(d){localStorage.setItem(sessionKey(),JSON.stringify({...getSessionData(),...d}));}
+
+/* ══ PLAYER IDENTITY (no auth) ══════════════ */
+function getOrCreateDeviceId(){
+  let id = localStorage.getItem('wt_device_id');
+  if(!id){ id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,9); localStorage.setItem('wt_device_id',id); }
+  return id;
+}
+function getPlayer(){ try{ return JSON.parse(localStorage.getItem('wt_player'))||null; }catch(e){return null;} }
+function savePlayerName(name){ 
+  const id=getOrCreateDeviceId();
+  const player={name:name.trim(),deviceId:id};
+  localStorage.setItem('wt_player',JSON.stringify(player));
+  renderPlayerWidget();
+  showAdminBtn();
+  return player;
+}
+function saveName(){
+  const inp=document.getElementById('player-name-input');
+  const name=(inp?inp.value:'').trim();
+  if(!name){ toast('नाम लिखो!'); return; }
+  savePlayerName(name);
+  closeModal('name-modal');
+  toast('नमस्ते, '+name+'! 🌶️');
+  if(GS.done){ const pts=GS.won?calcPoints(GS.guesses.length):0; saveScore(pts); }
+}
+function renderPlayerWidget(){
+  const player=getPlayer();
+  const el=document.getElementById('auth-widget');
+  if(!el) return;
+  if(player){
+    el.innerHTML=`<button class="hdr-btn" onclick="openModal('name-modal')" title="${player.name} — नाम बदलें" style="font-size:.65rem;font-weight:700;color:var(--ghee);min-width:44px;padding:0 6px;">${player.name.slice(0,8)}</button>`;
+  } else {
+    el.innerHTML=`<button class="hdr-btn" onclick="openModal('name-modal')" title="नाम दर्ज करें">👤</button>`;
+  }
+}
+function isAdmin(){ const p=getPlayer(); return p&&p.deviceId===ADMIN_DEVICE_ID; }
+function showAdminBtn(){ const b=document.getElementById('admin-btn'); if(b) b.style.display=isAdmin()?'flex':'none'; }
+
+function openNameModal(){
+  const player=getPlayer();
+  const inp=document.getElementById('player-name-input');
+  if(inp&&player) inp.value=player.name;
+  // Change modal title if already has name
+  const h2=document.querySelector('#name-modal h2');
+  if(h2&&player) h2.textContent='✏️ नाम बदलें';
+}
 
 function getOrAssignWord(wordList){
   const stored=getSessionData();
@@ -747,7 +858,7 @@ function showResult(){
   document.getElementById('res-grid').textContent=grid;
   document.getElementById('result-card').classList.add('show');
   document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'});
-  if(firebaseReady&&GS.user) saveScore(pts);
+  if(firebaseReady&&getPlayer()) saveScore(pts);
 }
 function shareResult(){
   const tries=GS.won?GS.guesses.length:'X';
@@ -763,14 +874,13 @@ function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('Copied! �
 
 /* ══ SAVE / LOAD SCORE ══════════════════════ */
 async function saveScore(pts){
-  if(!GS.user||!firebaseReady){ console.warn('saveScore: not ready',!!GS.user,firebaseReady); return; }
-  const today=todayStr(), week=weekKey(), docId=`${GS.user.uid}_${today}`;
+  if(!firebaseReady){ console.warn('Firebase not ready'); return; }
+  const player=getPlayer(); if(!player){ console.warn('No player name set'); return; }
+  const today=todayStr(), week=weekKey(), docId=`${player.deviceId}_${today}`;
   try{
-    // Use set with merge:false — creates doc if not exists, overwrites if exists (idempotent)
     await db.collection('scores').doc(docId).set({
-      userId:      GS.user.uid,
-      userName:    GS.user.displayName||'Anonymous',
-      userPhoto:   GS.user.photoURL||'',
+      deviceId:    player.deviceId,
+      userName:    player.name,
       date:        today,
       week:        week,
       attempts:    GS.guesses.length,
@@ -780,29 +890,23 @@ async function saveScore(pts){
       colors:      GS.colors,
       completedAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
-    await db.collection('users').doc(GS.user.uid).set({
-      name:  GS.user.displayName||'Anonymous',
-      photo: GS.user.photoURL||'',
-      ['weekly.'+week]: firebase.firestore.FieldValue.increment(pts),
-    },{merge:true});
     console.log('Score saved! pts='+pts);
-    toast('Score saved: '+pts+' pts ✅');
   }catch(e){
     console.error('saveScore error:',e);
-    toast('Score save failed: '+e.message, 4000);
+    toast('Score save failed: '+e.code, 3000);
   }
 }
 async function loadTodayScore(){
-  if(!GS.user||!firebaseReady)return;
-  const docId=`${GS.user.uid}_${todayStr()}`;
+  if(!firebaseReady) return;
+  const player=getPlayer(); if(!player) return;
+  const docId=`${player.deviceId}_${todayStr()}`;
   try{
     const doc=await db.collection('scores').doc(docId).get();
     if(!doc.exists){
-      // Not on server yet — if game finished locally, save now
       if(GS.done){ const pts=GS.won?calcPoints(GS.guesses.length):0; await saveScore(pts); }
       return;
     }
-    // Already played — restore and block replay
+    // Already played — block replay
     const d=doc.data();
     GS.guesses=d.guesses||[]; GS.colors=d.colors||GS.guesses.map(g=>checkGuess(g,GS.answer));
     GS.done=true; GS.won=d.solved||false;
@@ -812,36 +916,10 @@ async function loadTodayScore(){
   }catch(e){ console.error('loadTodayScore:',e); }
 }
 
-/* ══ AUTH ════════════════════════════════════ */
-async function googleLogin(){
-  if(!firebaseReady){toast('Firebase load हो रहा है…');return;}
-  closeModal('login-modal');
-  const provider = new firebase.auth.GoogleAuthProvider();
-  provider.setCustomParameters({prompt:'select_account'});
-  try{
-    // Popup works on desktop + most mobile browsers
-    const result = await auth.signInWithPopup(provider);
-    if(result&&result.user){
-      GS.user=result.user; renderAuthWidget(); showAdminBtn(); loadTodayScore();
-      toast('Welcome, '+result.user.displayName.split(' ')[0]+'! 🌶️');
-    }
-  }catch(e){
-    if(e.code==='auth/popup-blocked'||e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'){
-      // Popup blocked on mobile — use redirect
-      toast('Redirect se login ho raha hai…');
-      try{ await auth.signInWithRedirect(provider); }catch(e2){ toast('Login failed: '+e2.message); }
-    } else {
-      toast('Login failed: '+e.message);
-    }
-  }
-}
-function renderAuthWidget(){
-  const el=document.getElementById('auth-widget');
-  if(GS.user){el.innerHTML=`<img class="user-avatar" src="${GS.user.photoURL||''}" onerror="this.style.display='none'" onclick="confirmLogout()" title="${GS.user.displayName}">`;}
-  else{el.innerHTML=`<button class="hdr-btn" onclick="googleLogin()">👤</button>`;}
-}
-function confirmLogout(){if(confirm('Logout करें?')&&firebaseReady) auth.signOut();}
-function isAdmin(){return GS.user&&GS.user.uid===ADMIN_UID;}
+/* ══ AUTH — removed, using name-based system ══ */
+
+
+// isAdmin defined in player system above
 function showAdminBtn(){const b=document.getElementById('admin-btn');if(b) b.style.display=isAdmin()?'flex':'none';}
 
 /* ══ LEADERBOARD ════════════════════════════ */
@@ -851,22 +929,33 @@ async function loadLeaderboard(type){
   const el=document.getElementById('lb-content');el.innerHTML='<div class="lb-loading">🌶️ लोड हो रहा है…</div>';
   if(!firebaseReady){el.innerHTML='<div class="lb-empty">Login के बाद leaderboard दिखेगा 🌶️</div>';return;}
   try{
+    const myDeviceId=getPlayer()?.deviceId;
     let entries=[];
     if(type==='daily'){
       const snap=await db.collection('scores').where('date','==',todayStr()).get();
-      entries=snap.docs.map(d=>({uid:d.data().userId,name:d.data().userName,photo:d.data().userPhoto,pts:d.data().totalPoints||0,tries:d.data().attempts,solved:d.data().solved,ts:d.data().completedAt?.toMillis()||0}));
+      entries=snap.docs.map(d=>({
+        uid:d.data().deviceId, name:d.data().userName,
+        pts:d.data().totalPoints||0, tries:d.data().attempts,
+        solved:d.data().solved, ts:d.data().completedAt?.toMillis()||Infinity
+      }));
       entries.sort((a,b)=>b.pts-a.pts||(a.ts-b.ts));
     }else{
-      const snap=await db.collection('scores').where('week','==',weekKey()).get();
-      const map={};snap.docs.forEach(d=>{const{userId,userName,userPhoto,totalPoints}=d.data();if(!map[userId])map[userId]={name:userName,photo:userPhoto,pts:0,games:0};map[userId].pts+=totalPoints||0;map[userId].games++;});
+      const wk=weekKey();
+      const snap=await db.collection('scores').where('week','==',wk).get();
+      const map={};
+      snap.docs.forEach(d=>{
+        const id=d.data().deviceId, nm=d.data().userName, pts=d.data().totalPoints||0;
+        if(!map[id]) map[id]={name:nm,pts:0,games:0};
+        map[id].pts+=pts; map[id].games++;
+      });
       entries=Object.entries(map).map(([uid,v])=>({uid,...v})).sort((a,b)=>b.pts-a.pts);
     }
     entries=entries.slice(0,25).map((e,i)=>({...e,rank:i+1}));
-    const myUid=GS.user?.uid;
+    // myUid handled above as myDeviceId
     const rankIcons=['🥇','🥈','🥉'];
     if(!entries.length){el.innerHTML='<div class="lb-empty">अभी कोई score नहीं 🌶️<br><span style="font-size:.75rem">पहले खेलो, फिर आना!</span></div>';return;}
     el.innerHTML=entries.map((e,i)=>`
-      <div class="lb-entry${e.rank<=3?' rank'+e.rank:''}${e.uid===myUid?' me':''}">
+      <div class="lb-entry${e.rank<=3?' rank'+e.rank:''}${e.uid===myDeviceId?' me':''}">
         <div class="lb-rank">${rankIcons[e.rank-1]||e.rank}</div>
         <img class="lb-avatar" src="${e.photo||''}" onerror="this.src=''" loading="lazy">
         <div class="lb-info">
@@ -888,7 +977,7 @@ function addWordToList(){const inp=document.getElementById('admin-word-input');c
 function removePendingWord(w){pendingWords=pendingWords.filter(x=>x!==w);renderPendingWords();}
 function renderPendingWords(){document.getElementById('pending-words').innerHTML=pendingWords.map(w=>`<div class="word-chip">${w}<button class="word-chip-del" onclick="removePendingWord('${w}')">✕</button></div>`).join('');}
 async function adminSaveWords(){
-  if(!isAdmin()){toast('Admin access nahi');return;}const dateVal=document.getElementById('admin-date').value;
+  if(!isAdmin()){toast('Admin access nahi — pehle sahi device pe kholo');return;}const dateVal=document.getElementById('admin-date').value;
   if(!dateVal){toast('Date select karo');return;}if(!pendingWords.length){toast('Koi word add nahi');return;}
   try{await db.collection('words').doc(dateVal).set({wordList:pendingWords,setBy:GS.user.uid,setAt:firebase.firestore.FieldValue.serverTimestamp()});toast(`✅ ${pendingWords.length} words saved`);pendingWords=[];renderPendingWords();loadAdminWordList();if(dateVal===todayStr()&&!GS.done){GS.answer=getOrAssignWord(pendingWords);renderGrid();}}catch(e){toast('Error: '+e.message);}
 }
@@ -900,12 +989,12 @@ async function loadAdminWordList(){
     el.innerHTML=dates.map((date,i)=>{const doc=snaps[i],wl=doc.exists?doc.data().wordList:null;const isToday=date===todayStr();return`<div class="word-list-item" style="${isToday?'border-color:var(--tadka)':''}"><div class="wli-date">${date.slice(5)}<br><span style="font-size:.6rem;color:${isToday?'var(--tadka)':'var(--subtext)'}">${isToday?'आज':i===1?'कल':''}</span></div><div class="wli-words">${wl?wl.join(', '):'<span style="color:var(--subtext)">—</span>'}</div>${wl?`<button class="wli-del" onclick="adminDeleteWords('${date}')">🗑️</button>`:''}</div>`;}).join('');
   }catch(e){el.innerHTML=`<div class="lb-loading">Error: ${e.message}</div>`;}
 }
-function openAdminPanel(){const t=new Date(todayStr());t.setDate(t.getDate()+1);document.getElementById('admin-date').value=t.toISOString().slice(0,10);document.getElementById('admin-uid-display').textContent=GS.user?GS.user.uid:'login karo';pendingWords=[];renderPendingWords();loadAdminWordList();}
+function openAdminPanel(){const t=new Date(todayStr());t.setDate(t.getDate()+1);document.getElementById('admin-date').value=t.toISOString().slice(0,10);document.getElementById('admin-uid-display').textContent=getPlayer()?.deviceId||'pehle naam dalo';pendingWords=[];renderPendingWords();loadAdminWordList();}
 
 /* ══ MODAL / UTILS ══════════════════════════ */
 let _tt;
 function toast(m,d=2200){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),d);}
-function openModal(id){document.getElementById(id).classList.remove('hidden');if(id==='lb-modal')loadLeaderboard(activeTab);if(id==='admin-modal')openAdminPanel();}
+function openModal(id){document.getElementById(id).classList.remove('hidden');if(id==='lb-modal')loadLeaderboard(activeTab);if(id==='admin-modal')openAdminPanel();if(id==='name-modal')openNameModal();}
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('hidden');}));
 document.addEventListener('keydown',e=>{if(e.key==='Enter')submitGuess();else if(e.key==='Backspace')doBackspace();});
@@ -932,8 +1021,13 @@ function init(){
   document.getElementById('word-num').textContent='#'+(wordIndex()+1);
   buildGrid();buildKeyboard();renderGrid();renderKeyboard();
   startTimer();
-  if(GS.done)setTimeout(showResult,300);
+  renderPlayerWidget();
+  showAdminBtn();
+  if(GS.done) setTimeout(showResult,300);
   initFirebase();
+  // Show name prompt if first time
+  const player=getPlayer();
+  if(!player) setTimeout(()=>openModal('name-modal'),800);
 }
 init();
 </script>
